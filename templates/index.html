@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>你在找什么？</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        #result {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="text-center">你在找什么？</h2>
+            <div class="input-group mb-3">
+                <input type="text" id="keyword" class="form-control" placeholder="输入关键词">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-primary" onclick="sendKeyword()">提交</button>
+                    <button class="btn btn-outline-danger" onclick="cancelSearch()">取消</button>
+                </div>
+            </div>
+            <pre id="result"></pre>
+        </div>
+    </div>
+</div>
+<script>
+var socket = io({path: '/io'});
+
+socket.on('message', function(data) {
+    var data = data.message.replace(/\n/g, '\n\n').replace(':', ':\n');
+    document.getElementById("result").textContent = data + document.getElementById("result").textContent;  // 倒序
+});
+
+function sendKeyword() {
+    var keyword = document.getElementById("keyword").value;
+    fetch('/search', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({keyword: keyword}),
+    })
+}
+
+function cancelSearch() {
+    navigator.sendBeacon('/cancel');
+}
+
+window.addEventListener('beforeunload', function (e) {
+    cancelSearch();
+});
+</script>
+</body>
+</html>
