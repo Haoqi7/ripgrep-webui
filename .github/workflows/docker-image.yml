@@ -32,9 +32,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .                          # 构建上下文（项目根目录）
-          file: ./Dockerfile                  # Dockerfile 路径（与项目中的 docker-compose.yml 一致）
-          push: true                          # 推送镜像到 Docker Hub
-          tags: |                             # 镜像标签（格式：Docker Hub 用户名/仓库名:输入的标签）
-            haoqi7/sed:${{ inputs.image_tag }}  # 手动输入的标签（核心）
-            haoqi7/sed:latest                  # 可选：同时标记为 latest（方便拉取最新版）
+          context: .                         
+          file: ./Dockerfile                  
+          push: true                       
+          tags: |                           
+            haoqi7/sed:${{ inputs.image_tag }} 
+            haoqi7/sed:latest                  
