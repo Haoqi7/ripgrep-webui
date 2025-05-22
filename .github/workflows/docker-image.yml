@@ -34,6 +34,5 @@ jobs:
           file: ./Dockerfile  # 你的 Dockerfile 路径（根据项目实际路径调整）
           push: true
           tags: |
-            haoqi7/sed:${{ inputs.image_tag }}  # 手动输入的标签（核心修改！）
             haoqi7/sed:latest                   # 保留 latest 标签（可选）
             haoqi7/sed:${{ github.sha }}        # 提交 SHA 标签（可选）
