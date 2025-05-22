@@ -1,38 +1,40 @@
-name: Docker Build & Push
+name: Manual Docker Build & Push
 
-# 触发条件：支持手动触发（workflow_dispatch）和推送到 main 分支（可选保留）
+# 仅保留手动触发（workflow_dispatch）
 on:
-  push:
-    branches: [ "main" ]  # 保留原有自动触发（可选，可删除）
-  workflow_dispatch:      # 新增手动触发
+  workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Docker Image Tag (e.g., test, v1.0.0)'  # 输入框描述
-        required: true                                        # 必填
-        default: 'test'                                       # 默认值
+        description: 'Docker 镜像标签（如：v1.0.0、test）'
+        required: true
+        default: 'test'  # 默认标签（可修改）
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
+      # 1. 检出代码到 GitHub 服务器
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. 初始化 Docker Buildx（支持多架构构建）
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 3. 登录 Docker Hub（使用 GitHub Secrets 安全存储凭证）
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Docker Hub 用户名（Secrets）
-          password: ${{ secrets.DOCKERHUB_TOKEN }}     # Docker Hub 访问令牌（Secrets）
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Docker Hub 用户名（需在 GitHub Secrets 中配置）
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # Docker Hub 访问令牌（需在 GitHub Secrets 中配置）
 
+      # 4. 构建并推送 Docker 镜像（标签为手动输入的 image_tag）
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile  # 你的 Dockerfile 路径（根据项目实际路径调整）
-          push: true
-          tags: |
-            haoqi7/sed:latest                   # 保留 latest 标签（可选）
-            haoqi7/sed:${{ github.sha }}        # 提交 SHA 标签（可选）
+          context: .                          # 构建上下文（项目根目录）
+          file: ./Dockerfile                  # Dockerfile 路径（与项目中的 docker-compose.yml 一致）
+          push: true                          # 推送镜像到 Docker Hub
+          tags: |                             # 镜像标签（格式：Docker Hub 用户名/仓库名:输入的标签）
+            haoqi7/sed:${{ inputs.image_tag }}  # 手动输入的标签（核心）
+            haoqi7/sed:latest                  # 可选：同时标记为 latest（方便拉取最新版）
