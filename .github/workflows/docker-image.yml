@@ -1,0 +1,36 @@
+name: Docker Build & Push
+
+# 触发条件：推送到 main 分支时执行
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出代码到 GitHub 服务器
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Docker 构建环境（支持多架构）
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. 登录 Docker Hub（使用 GitHub Secrets 存储凭证）
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Docker Hub 用户名（需在 GitHub Secrets 中配置）
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # Docker Hub 令牌（需在 GitHub Secrets 中配置）
+
+      # 4. 构建并推送 Docker 镜像
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .                 # 构建上下文（项目根目录）
+          file: ./Dockerfile          # Dockerfile 路径（根据实际路径调整）
+          push: true                  # 推送镜像到仓库
+          tags: |                     # 镜像标签（格式：Docker Hub 用户名/仓库名:标签）
+            haoqi7/sed:latest  # 替换为你的 Docker Hub 用户名
+            haoqi7/sed:${{ github.sha }}  # 基于提交 SHA 的标签
